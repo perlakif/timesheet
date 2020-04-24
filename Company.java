@@ -3,7 +3,6 @@ package timesheets;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -53,24 +52,17 @@ public class Company {
 
 
     public void addTimeSheetItem(Employee employee, Project project, LocalDateTime beginDate, LocalDateTime endDate) {
-        TimeSheetItem tsi = new TimeSheetItem(this.validator,employee,project,beginDate,endDate);
-        timeSheetItems.add(tsi);
+        timeSheetItems.add(new TimeSheetItem(this.validator,employee,project,beginDate,endDate));
     }
 
-    public List<ReportLine> calculateProjectByNameYearMonth(String name, int year, Month month) {
-        List<ReportLine> result = this.emptyReportListWithProjects();
-        for (TimeSheetItem tsi: this.timeSheetItems) {
-            if(tsi.getEmployee().getFullName().equals(name)) {
-                if (tsi.getBeginDate().getMonth().equals(month)) {
-                    for (int i= 0; i<result.size(); i++) {
-                        if(result.get(i).getProject().getName().equals(tsi.getProject().getName())) {
-                            result.get(i).addTime((Long)tsi.countDifferencBetweenDate().toHours());
-                        }
-                    }
-                }
+    public List<ReportLine> calculateProjectByNameYearMonth(String employeeName, int year, Month month) {
+        List<ReportLine> reportLineList = this.emptyReportListWithProjects();
+        for (TimeSheetItem actualTimeSheetItem: this.timeSheetItems) {
+            if(this.equalNameToTimesheetEmployeeName(actualTimeSheetItem,employeeName) && this.equelMonthToTimesheetMonth(actualTimeSheetItem,month)) {
+                addTimeSheetHoursToReportLineList(reportLineList, actualTimeSheetItem);
             }
         }
-        return result;
+        return reportLineList;
     }
 
     public List<ReportLine> emptyReportListWithProjects() {
@@ -90,30 +82,15 @@ public class Company {
         return time;
     }
 
-    public String prepareReport(String name, int year, Month month) {
+    public String prepareReport(String employeeName, int year, Month month) {
         String result = "";
 
-        if (this.validator.notInEmployeeList(this.employees,name)) {
-            throw new IllegalArgumentException("Argument not in employees list "+ name );
+        if (this.validator.notInEmployeeList(this.employees,employeeName)) {
+            throw new IllegalArgumentException("Argument not in employees list "+ employeeName );
         }
 
-        timeSheetItems.sort((timeSheetItem, t1) -> (int)Duration.between(timeSheetItem.getBeginDate(), t1.getBeginDate()).toHours());
-        
-        int sumHoursOfDay=0;
-        for (int i=0; i<timeSheetItems.size(); i++) {
-            if (timeSheetItems.get(i).getEmployee().getFullName().equals(name) && timeSheetItems.get(i).getBeginDate().getMonth().equals(month)) {
-                sumHoursOfDay = sumHoursOfDay+ (int)timeSheetItems.get(i).countDifferencBetweenDate().toHours();
-            }
-        }
-
-
-        result = name + LocalDate.of(year,month,1) + sumHoursOfDay +"\n";
-        for (ReportLine rpl: calculateProjectByNameYearMonth(name,year,month)) {
-            if(rpl.getTime() != 0L) {
-                result = result + rpl.getProject().getName()+"\t"+rpl.getTime()+"\n";
-            }
-        }
-
+        result = employeeName + "\t" + LocalDate.of(year,month,1) + "\t" + sumHoursOfEmployeeByMonth(employeeName,month) +"\n" +
+                calculateProjectListWithSumHoursByEmployeeMonth(employeeName,year,month);
         return result;
     }
 
@@ -128,4 +105,43 @@ public class Company {
     public List<TimeSheetItem> getTimeSheetItems() {
         return timeSheetItems;
     }
+
+    private void addTimeSheetHoursToReportLineList(List<ReportLine> reportLineList, TimeSheetItem timeSheetItem) {
+        for (int i= 0; i<reportLineList.size(); i++) {
+            ReportLine actualReportLine = reportLineList.get(i);
+            if(reportLineList.get(i).getProject().getName().equals(timeSheetItem.getProject().getName())) {
+                reportLineList.get(i).addTime((Long)timeSheetItem.countDifferencBetweenDate().toHours());
+            }
+        }
+
+    }
+
+    private int sumHoursOfEmployeeByMonth(String name, Month month) {
+        int sumHours = 0;
+        for (int i=0; i<timeSheetItems.size(); i++) {
+            if (this.equalNameToTimesheetEmployeeName(timeSheetItems.get(i),name) && this.equelMonthToTimesheetMonth(timeSheetItems.get(i),month)) {
+                sumHours = sumHours+ (int)timeSheetItems.get(i).countDifferencBetweenDate().toHours();
+            }
+        }
+        return sumHours;
+    }
+
+    private boolean equalNameToTimesheetEmployeeName(TimeSheetItem timeSheetItem, String employeeName) {
+        return timeSheetItem.getEmployee().getFullName().equals(employeeName);
+    }
+
+    private boolean equelMonthToTimesheetMonth(TimeSheetItem timeSheetItem, Month month) {
+        return timeSheetItem.getBeginDate().getMonth().equals(month);
+    }
+
+    private String calculateProjectListWithSumHoursByEmployeeMonth(String employeeNamem, int year, Month month) {
+        String result = "";
+        for (ReportLine actualReportLine: calculateProjectByNameYearMonth(employeeNamem,year,month)) {
+            if(actualReportLine.getTime() != 0L) {
+                result = result + actualReportLine.getProject().getName()+"\t"+actualReportLine.getTime()+"\n";
+            }
+        }
+        return result;
+    }
+
 }
