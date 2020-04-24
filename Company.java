@@ -25,7 +25,7 @@ public class Company {
 
     private void loadEmployee() {
         try {
-            Path file = Path.of("C:\\Users\\T360-ls-JM-s23\\IdeaProjects\\TimeSheet\\src\\employees.txt");
+            Path file = Path.of("employees.txt");
             List<String> enployeeList = Files.readAllLines(file);
             for (String employeeText: enployeeList) {
                 String[] names = employeeText.split(" ");
@@ -39,7 +39,7 @@ public class Company {
 
     private void loadProjects() {
         try {
-            Path file = Path.of("C:\\Users\\T360-ls-JM-s23\\IdeaProjects\\TimeSheet\\src\\projects.txt");
+            Path file = Path.of("projects.txt");
             List<String> projectsList = Files.readAllLines(file);
             for (String projectText: projectsList) {
                 this.projects.add(new Project(projectText));
