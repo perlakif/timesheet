@@ -57,7 +57,7 @@ public class Company {
 
     public void printToFile(String employeeName, int year, Month month)  {
         String report = this.prepareReport(employeeName,year,month);
-        String fileName = employeeName.replace(" ","") + "_"+ year+"_" +month+"_timesheetReport.txt";
+        String fileName = employeeName.replace(" ","") + "_" + year + "_" + month + "_timesheetReport.txt";
         Path file = Path.of(fileName);
         try {
             Files.writeString(file,report);
