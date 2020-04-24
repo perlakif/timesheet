@@ -25,7 +25,7 @@ public class Company {
 
     private void loadEmployee() {
         try {
-            Path file = Path.of("employees.txt");
+            Path file = Path.of("C:\\Users\\T360-ls-JM-s23\\IdeaProjects\\TimeSheet\\src\\employees.txt");
             List<String> enployeeList = Files.readAllLines(file);
             for (String employeeText: enployeeList) {
                 String[] names = employeeText.split(" ");
@@ -39,7 +39,7 @@ public class Company {
 
     private void loadProjects() {
         try {
-            Path file = Path.of("projects.txt");
+            Path file = Path.of("C:\\Users\\T360-ls-JM-s23\\IdeaProjects\\TimeSheet\\src\\projects.txt");
             List<String> projectsList = Files.readAllLines(file);
             for (String projectText: projectsList) {
                 this.projects.add(new Project(projectText));
@@ -53,6 +53,18 @@ public class Company {
 
     public void addTimeSheetItem(Employee employee, Project project, LocalDateTime beginDate, LocalDateTime endDate) {
         timeSheetItems.add(new TimeSheetItem(this.validator,employee,project,beginDate,endDate));
+    }
+
+    public void printToFile(String employeeName, int year, Month month)  {
+        String report = this.prepareReport(employeeName,year,month);
+        String fileName = employeeName.replace(" ","") + "_"+ year+"_" +month+"_timesheetReport.txt";
+        Path file = Path.of(fileName);
+        try {
+            Files.writeString(file,report);
+        } catch (IOException ieo) {
+            throw new IllegalStateException("Can not write file " + ieo);
+        }
+
     }
 
     public List<ReportLine> calculateProjectByNameYearMonth(String employeeName, int year, Month month) {
@@ -92,17 +104,6 @@ public class Company {
                 calculateProjectListWithSumHoursByEmployeeMonth(employeeName,year,month);
     }
 
-    public List<Employee> getEmployees() {
-        return employees;
-    }
-
-    public List<Project> getProjects() {
-        return projects;
-    }
-
-    public List<TimeSheetItem> getTimeSheetItems() {
-        return timeSheetItems;
-    }
 
     private void addTimeSheetHoursToReportLineList(List<ReportLine> reportLineList, TimeSheetItem timeSheetItem) {
         for (int i= 0; i<reportLineList.size(); i++) {
@@ -142,4 +143,15 @@ public class Company {
         return result;
     }
 
+    public List<Employee> getEmployees() {
+        return employees;
+    }
+
+    public List<Project> getProjects() {
+        return projects;
+    }
+
+    public List<TimeSheetItem> getTimeSheetItems() {
+        return timeSheetItems;
+    }
 }
