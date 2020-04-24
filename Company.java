@@ -83,15 +83,13 @@ public class Company {
     }
 
     public String prepareReport(String employeeName, int year, Month month) {
-        String result = "";
 
         if (this.validator.notInEmployeeList(this.employees,employeeName)) {
             throw new IllegalArgumentException("Argument not in employees list "+ employeeName );
         }
 
-        result = employeeName + "\t" + LocalDate.of(year,month,1) + "\t" + sumHoursOfEmployeeByMonth(employeeName,month) +"\n" +
+        return employeeName + "\t" + LocalDate.of(year,month,1) + "\t" + sumHoursOfEmployeeByMonth(employeeName,month) +"\n" +
                 calculateProjectListWithSumHoursByEmployeeMonth(employeeName,year,month);
-        return result;
     }
 
     public List<Employee> getEmployees() {
